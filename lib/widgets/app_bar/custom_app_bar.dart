@@ -72,7 +72,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 if (actions != null) ...actions!,
 
                 // صورة المستخدم
-                _buildUserProfile(),
+                _buildUserProfile(context),
               ],
             ),
           ],
@@ -101,21 +101,31 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       );
     }
 
-    return IconButton(
-      onPressed: onMenuPressed,
-      icon: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Icon(
-          Icons.menu_rounded,
-          size: 20,
-          color: AppColors.textPrimary,
-        ),
-      ),
+    // استخدم Builder للحصول على context صحيح
+    return Builder(
+      builder: (innerContext) {
+        return IconButton(
+          onPressed:
+              onMenuPressed ??
+              () {
+                // افتح الـ Drawer إذا لم يتم تمرير دالة
+                Scaffold.of(innerContext).openDrawer();
+              },
+          icon: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.menu_rounded,
+              size: 20,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -199,11 +209,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildUserProfile() {
+  // في دالة _buildUserProfile في CustomAppBar.dart
+  Widget _buildUserProfile(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 12),
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          // استخدم هذا الكود
+          Navigator.pushNamed(context, '/profile');
+        },
         child: Container(
           width: 40,
           height: 40,

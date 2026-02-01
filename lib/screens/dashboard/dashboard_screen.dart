@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../app/routes.dart';
 import '../../utils/colors.dart';
-import '../../utils/text_styles.dart';
 import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/bottom_nav/custom_bottom_nav.dart';
 import '../../widgets/side_menu/side_menu.dart';
@@ -16,13 +16,13 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedMenuIndex = 0;
   int _selectedNavIndex = 0;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _showSideMenu = true;
 
   void _onMenuSelected(int index) {
     setState(() {
       _selectedMenuIndex = index;
     });
+    // إغلاق Drawer بعد الاختيار
+    Navigator.of(context).pop();
   }
 
   void _onNavTabChanged(int index) {
@@ -31,51 +31,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  void _toggleSideMenu() {
-    setState(() {
-      _showSideMenu = !_showSideMenu;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
         title: _getAppBarTitle(),
-        onMenuPressed: _toggleSideMenu,
         showNotification: true,
         notificationCount: 5,
       ),
-      drawer: _showSideMenu
-          ? Drawer(
-              width: 280,
-              backgroundColor: Colors.transparent,
-              child: SideMenu(
-                selectedIndex: _selectedMenuIndex,
-                onItemSelected: _onMenuSelected,
-              ),
-            )
-          : null,
-      body: Row(
-        children: [
-          // القائمة الجانبية (ثابتة)
-          if (_showSideMenu)
-            SideMenu(
-              selectedIndex: _selectedMenuIndex,
-              onItemSelected: _onMenuSelected,
-            ),
-
-          // المحتوى الرئيسي
-          Expanded(
-            child: Container(
-              color: AppColors.background,
-              child: _buildContent(),
-            ),
-          ),
-        ],
+      drawer: Drawer(
+        width: 280,
+        child: SideMenu(
+          selectedIndex: _selectedMenuIndex,
+          onItemSelected: _onMenuSelected,
+        ),
       ),
+      body: _buildContent(),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _selectedNavIndex,
         onTabChanged: _onNavTabChanged,
@@ -114,67 +86,70 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // الإحصائيات السريعة
           _buildStatsGrid(),
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
 
           // الرسم البياني
           _buildChartSection(),
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
 
           // آخر العمليات
           _buildRecentActivity(),
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
 
           // المهام القادمة
           _buildUpcomingTasks(),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
   Widget _buildStatsGrid() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 4,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.2,
-      children: [
-        _buildStatCard(
-          title: 'إجمالي الإيرادات',
-          value: '٥٤,٢٠٠ ر.س',
-          icon: Icons.trending_up_rounded,
-          color: AppColors.success,
-          change: '+12%',
-        ),
-        _buildStatCard(
-          title: 'العقود النشطة',
-          value: '٤٨',
-          icon: Icons.assignment_rounded,
-          color: AppColors.primary,
-          change: '+5',
-        ),
-        _buildStatCard(
-          title: 'الوحدات المشغولة',
-          value: '٨٥%',
-          icon: Icons.home_work_rounded,
-          color: AppColors.warning,
-          change: '+3%',
-        ),
-        _buildStatCard(
-          title: 'المدفوعات المتأخرة',
-          value: '٣',
-          icon: Icons.schedule_rounded,
-          color: AppColors.error,
-          change: '-2',
-        ),
-      ],
+    return SizedBox(
+      height: 230,
+      child: GridView.count(
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.5,
+        children: [
+          _buildStatCard(
+            title: 'إجمالي الإيرادات',
+            value: '٥٤,٢٠٠ ر.س',
+            icon: Icons.trending_up_rounded,
+            color: AppColors.success,
+            change: '+12%',
+          ),
+          _buildStatCard(
+            title: 'العقود النشطة',
+            value: '٤٨',
+            icon: Icons.assignment_rounded,
+            color: AppColors.primary,
+            change: '+5',
+          ),
+          _buildStatCard(
+            title: 'الوحدات المشغولة',
+            value: '٨٥%',
+            icon: Icons.home_work_rounded,
+            color: AppColors.warning,
+            change: '+3%',
+          ),
+          _buildStatCard(
+            title: 'المدفوعات المتأخرة',
+            value: '٣',
+            icon: Icons.schedule_rounded,
+            color: AppColors.error,
+            change: '-2',
+          ),
+        ],
+      ),
     );
   }
 
@@ -186,67 +161,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String change,
   }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // الأيقونة
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 16),
-
-          // القيمة
-          Text(
-            value,
-            style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 8),
-
-          // العنوان والتغيير
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   change,
-                  style: AppTextStyles.caption.copyWith(
+                  style: TextStyle(
                     color: color,
+                    fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -257,10 +225,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildChartSection() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
@@ -269,28 +237,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('الإيرادات الشهرية', style: AppTextStyles.h3),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+              Text(
+                'الإيرادات الشهرية',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.background,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text('آخر ٦ شهور', style: AppTextStyles.caption),
+                child: Text(
+                  'آخر ٦ شهور',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // محاكاة الرسم البياني
+          const SizedBox(height: 16),
           Container(
-            height: 200,
+            height: 150,
             decoration: BoxDecoration(
               color: AppColors.background,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
               child: Column(
@@ -298,15 +274,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Icon(
                     Icons.bar_chart_rounded,
-                    size: 60,
+                    size: 40,
                     color: AppColors.primary.withOpacity(0.3),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   Text(
                     'مخطط الإيرادات',
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.textLight,
-                    ),
+                    style: TextStyle(color: AppColors.textLight, fontSize: 12),
                   ),
                 ],
               ),
@@ -319,48 +293,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildRecentActivity() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('آخر الأنشطة', style: AppTextStyles.h3),
-          const SizedBox(height: 20),
-
-          // قائمة الأنشطة
+          Text(
+            'آخر الأنشطة',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
           Column(
             children: [
               _buildActivityItem(
                 icon: Icons.payment_rounded,
                 title: 'دفعة جديدة',
-                subtitle: 'عقد #٢٣٤ - محمد أحمد',
+                subtitle: 'عقد #٢٣٤',
                 time: 'منذ ١٠ دقائق',
                 color: AppColors.success,
               ),
               _buildActivityItem(
-                icon: Icons.assignment_ind_rounded,
+                icon: Icons.assignment_rounded,
                 title: 'عقد جديد',
-                subtitle: 'عمارة النخيل - شقة ٣٠١',
+                subtitle: 'عمارة النخيل',
                 time: 'منذ ساعتين',
                 color: AppColors.primary,
               ),
               _buildActivityItem(
                 icon: Icons.home_work_rounded,
                 title: 'وحدة جديدة',
-                subtitle: 'عمارة الرياض - الطابق ٤',
+                subtitle: 'عمارة الرياض',
                 time: 'منذ يوم',
                 color: AppColors.warning,
-              ),
-              _buildActivityItem(
-                icon: Icons.warning_rounded,
-                title: 'تنبيه تأخير',
-                subtitle: 'عقد #١٨٩ - سعيد خالد',
-                time: 'منذ يومين',
-                color: AppColors.error,
               ),
             ],
           ),
@@ -377,59 +349,85 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.border.withOpacity(0.5),
+            width: 0.5,
+          ),
+        ),
       ),
       child: Row(
         children: [
-          // الأيقونة
           Container(
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(icon, size: 20, color: color),
+            child: Icon(icon, size: 16, color: color),
           ),
-          const SizedBox(width: 16),
-
-          // النص
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.body.copyWith(
+                  style: TextStyle(
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textLight,
-                  ),
+                  style: TextStyle(fontSize: 10, color: AppColors.textLight),
                 ),
               ],
             ),
           ),
-
-          // الوقت
-          Text(time, style: AppTextStyles.caption),
+          Text(time, style: TextStyle(fontSize: 4, color: AppColors.textLight)),
         ],
+      ),
+    );
+  }
+
+  // في CustomAppBar
+  Widget _buildUserProfile() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12),
+      child: GestureDetector(
+        onTap: () {
+          // الانتقال لصفحة الملف الشخصي
+          Navigator.of(context).pushNamed(AppRoutes.profile);
+        },
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border, width: 1),
+          ),
+          child: const Icon(
+            Icons.person_outline,
+            size: 20,
+            color: AppColors.textPrimary,
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildUpcomingTasks() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
@@ -438,21 +436,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('المهام القادمة', style: AppTextStyles.h3),
+              Text(
+                'المهام القادمة',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
               TextButton(
                 onPressed: () {},
                 child: Text(
                   'عرض الكل',
-                  style: AppTextStyles.button.copyWith(
-                    color: AppColors.primary,
-                  ),
+                  style: TextStyle(color: AppColors.primary, fontSize: 12),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // قائمة المهام
+          const SizedBox(height: 12),
           Column(
             children: [
               _buildTaskItem(
@@ -466,12 +467,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 date: 'بعد غد - ٠٢:٠٠ م',
                 priority: 'متوسط',
                 priorityColor: AppColors.warning,
-              ),
-              _buildTaskItem(
-                title: 'اجتماع مع الملاك',
-                date: 'الأحد - ١١:٠٠ ص',
-                priority: 'منخفض',
-                priorityColor: AppColors.success,
               ),
             ],
           ),
@@ -487,56 +482,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required Color priorityColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.border.withOpacity(0.5),
+            width: 0.5,
+          ),
+        ),
       ),
       child: Row(
         children: [
-          // مربع الاختيار
           Container(
-            width: 24,
-            height: 24,
+            width: 18,
+            height: 18,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.border, width: 2),
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: AppColors.border, width: 1.5),
             ),
           ),
-          const SizedBox(width: 16),
-
-          // تفاصيل المهمة
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.body.copyWith(
+                  style: TextStyle(
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
                   date,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textLight,
-                  ),
+                  style: TextStyle(fontSize: 10, color: AppColors.textLight),
                 ),
               ],
             ),
           ),
-
-          // الأولوية
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
               color: priorityColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(3),
             ),
             child: Text(
               priority,
-              style: AppTextStyles.caption.copyWith(
+              style: TextStyle(
                 color: priorityColor,
+                fontSize: 9,
                 fontWeight: FontWeight.w600,
               ),
             ),

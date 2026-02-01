@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../utils/colors.dart';
-import '../../utils/text_styles.dart';
 
 class SideMenu extends StatefulWidget {
   final int selectedIndex;
@@ -26,7 +25,6 @@ class _SideMenuState extends State<SideMenu> {
           icon: Icons.dashboard_outlined,
           label: 'لوحة التحكم',
           index: 0,
-          isActive: true,
         ),
         MenuItem(
           icon: Icons.notifications_outlined,
@@ -35,6 +33,11 @@ class _SideMenuState extends State<SideMenu> {
           notificationCount: 3,
         ),
         MenuItem(icon: Icons.analytics_outlined, label: 'التقارير', index: 2),
+        MenuItem(
+          icon: Icons.person_outline,
+          label: 'الملف الشخصي',
+          index: 14, // رقم مختلف
+        ),
       ],
     ),
     MenuSection(
@@ -76,9 +79,6 @@ class _SideMenuState extends State<SideMenu> {
       width: 280,
       decoration: BoxDecoration(
         color: AppColors.sideMenuBg,
-        border: const Border(
-          right: BorderSide(color: AppColors.border, width: 1),
-        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
@@ -99,7 +99,7 @@ class _SideMenuState extends State<SideMenu> {
               children: [
                 for (var section in _menuSections) ...[
                   _buildSectionTitle(section.title),
-                  ..._buildSectionItems(section.items),
+                  ..._buildSectionItems(section.items, context),
                   const SizedBox(height: 20),
                 ],
               ],
@@ -151,12 +151,17 @@ class _SideMenuState extends State<SideMenu> {
               children: [
                 Text(
                   'العقارية المتحدة',
-                  style: AppTextStyles.h4.copyWith(color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'نشطة',
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: TextStyle(
+                    fontSize: 12,
                     color: Colors.white.withOpacity(0.8),
                   ),
                 ),
@@ -171,11 +176,19 @@ class _SideMenuState extends State<SideMenu> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Text(title, style: AppTextStyles.menuTitle),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textLight,
+          letterSpacing: 1.0,
+        ),
+      ),
     );
   }
 
-  List<Widget> _buildSectionItems(List<MenuItem> items) {
+  List<Widget> _buildSectionItems(List<MenuItem> items, BuildContext context) {
     return items.map((item) {
       final isSelected = widget.selectedIndex == item.index;
 
@@ -185,13 +198,16 @@ class _SideMenuState extends State<SideMenu> {
           color: isSelected ? AppColors.menuItemActive : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
-            onTap: () => widget.onItemSelected(item.index),
+            onTap: () {
+              widget.onItemSelected(item.index);
+              // إغلاق Drawer بعد الاختيار
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            },
             borderRadius: BorderRadius.circular(12),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-              ),
               child: Row(
                 children: [
                   // الأيقونة
@@ -210,13 +226,17 @@ class _SideMenuState extends State<SideMenu> {
                   Expanded(
                     child: Text(
                       item.label,
-                      style: isSelected
-                          ? AppTextStyles.menuItemActive
-                          : item.isLogout
-                          ? AppTextStyles.menuItem.copyWith(
-                              color: AppColors.error,
-                            )
-                          : AppTextStyles.menuItem,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? AppColors.primary
+                            : item.isLogout
+                            ? AppColors.error
+                            : AppColors.textSecondary,
+                      ),
                     ),
                   ),
 
@@ -267,7 +287,14 @@ class _SideMenuState extends State<SideMenu> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('الإصدار 1.0.0', style: AppTextStyles.caption),
+              Text(
+                'الإصدار 1.0.0',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textLight,
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -276,7 +303,9 @@ class _SideMenuState extends State<SideMenu> {
                 ),
                 child: Text(
                   'نشط',
-                  style: AppTextStyles.caption.copyWith(
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                     color: AppColors.success,
                   ),
                 ),
@@ -294,7 +323,14 @@ class _SideMenuState extends State<SideMenu> {
           ),
           const SizedBox(height: 8),
 
-          Text('75% من مساحة النظام مستخدمة', style: AppTextStyles.caption),
+          Text(
+            '75% من مساحة النظام مستخدمة',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textLight,
+            ),
+          ),
         ],
       ),
     );
@@ -312,7 +348,6 @@ class MenuItem {
   final IconData icon;
   final String label;
   final int index;
-  final bool isActive;
   final int? notificationCount;
   final bool isLogout;
 
@@ -320,7 +355,6 @@ class MenuItem {
     required this.icon,
     required this.label,
     required this.index,
-    this.isActive = false,
     this.notificationCount,
     this.isLogout = false,
   });

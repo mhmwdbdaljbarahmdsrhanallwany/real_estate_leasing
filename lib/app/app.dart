@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/dashboard/dashboard_screen.dart';
-import '../utils/colors.dart';
+import '../utils/colors.dart'; // تأكد من هذا المسار
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -24,13 +24,13 @@ class _AppState extends State<App> {
     await Future.delayed(const Duration(seconds: 2));
     setState(() {
       _isLoading = false;
-      _isLoggedIn = true; // لجعل لوحة التحكم تظهر مباشرة
+      _isLoggedIn = true;
     });
   }
 
   Widget _buildSplashScreen() {
     return Scaffold(
-      backgroundColor: AppColors.surfaceDark,
+      backgroundColor: AppColors.surfaceDark, // تأكد من وجود هذا اللون
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -93,8 +93,6 @@ class _AppState extends State<App> {
       return _buildSplashScreen();
     }
 
-    return _isLoggedIn
-        ? const DashboardScreen()
-        : const DashboardScreen(); // يمكن تغييرها لصفحة تسجيل الدخول
+    return const DashboardScreen(); // بسيط
   }
 }
