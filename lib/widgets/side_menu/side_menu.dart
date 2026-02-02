@@ -17,7 +17,7 @@ class SideMenu extends StatefulWidget {
 }
 
 class _SideMenuState extends State<SideMenu> {
-  final List<MenuSection> _menuSections = [
+  late final List<MenuSection> _menuSections = [
     MenuSection(
       title: 'الرئيسية',
       items: [
